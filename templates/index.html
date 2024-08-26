@@ -3,125 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Science Chatbot</title>
+    <title>Data Science Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        body, html {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            background-color: #f0f0f0;
+            padding: 0;
+            height: 100%;
+            background-color: #fff9f9; /* Very light pink background */
+            color: #333;
         }
-        .chat-container {
-            width: 80%;
-            max-width: 600px;
-            height: 80vh;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            overflow: hidden;
+        .app-container {
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            border-left: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+            background-color: #fff9f9; /* Match body background */
         }
-        #chat-messages {
+        .header {
+            background-color: #fff9f9; /* Match body background */
+            color: #333;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+        }
+        .chat-container {
             flex-grow: 1;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
             padding: 20px;
-            background-color: white;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        .user-message {
+            background-color: #f0f0f0;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            align-self: flex-start;
         }
         .input-area {
             display: flex;
             padding: 20px;
-            background-color: #f8f8f8;
+            border-top: 1px solid #e0e0e0;
+            background-color: #fff9f9; /* Match body background */
         }
         #user-input {
             flex-grow: 1;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 14px;
         }
-        button {
-            margin-left: 10px;
+        #send-button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #3067b1;
             color: white;
             border: none;
             border-radius: 4px;
+            margin-left: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .message {
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        .user-message {
-            text-align: right;
-            color: #007bff;
-        }
-        .bot-message {
-            text-align: left;
-            color: #28a745;
+        #send-button:hover {
+            background-color: #265694;
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div id="chat-messages"></div>
+    <div class="app-container">
+        <div class="header">
+            Data Science Assistant
+        </div>
+        <div class="chat-container" id="chat-messages">
+            <!-- Messages will be dynamically added here -->
+        </div>
         <div class="input-area">
-            <input type="text" id="user-input" placeholder="Ask about data science...">
+            <input type="text" id="user-input" placeholder="Ask about Data Science...">
             <button id="send-button">Send</button>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chat-messages');
-            const userInput = document.getElementById('user-input');
-            const sendButton = document.getElementById('send-button');
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
 
-            function sendMessage() {
-                const message = userInput.value.trim();
-                if (message === '') return;
+        function addMessage(message, isUser = false) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user-message' : 'bot-message');
+            messageElement.textContent = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
-                appendMessage('You', message, 'user-message');
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
                 userInput.value = '';
 
-                fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({message: message}),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    appendMessage('Bot', data.response, 'bot-message');
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                })
-                .catch(error => console.error('Error:', error));
-            }
-
-            function appendMessage(sender, text, className) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${className}`;
-                messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-                chatMessages.appendChild(messageDiv);
-            }
-
-            sendButton.addEventListener('click', sendMessage);
-
-            userInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
+                try {
+                    const response = await axios.post('/chat', { message: message });
+                    addMessage(response.data.response);
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage('Sorry, there was an error processing your request.');
                 }
-            });
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
         });
+
+        // Initial greeting
+        addMessage('Hello! I\'m your Data Science assistant. How can I help you today?');
     </script>
 </body>
 </html>
