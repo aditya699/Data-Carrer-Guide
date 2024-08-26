@@ -2,3 +2,4 @@ flask
 langchain
 langchain_anthropic
 python-dotenv
+langchain_core
