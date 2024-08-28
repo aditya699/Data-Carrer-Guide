@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+~$tes For Lecture.docx
 # C extensions
 *.so
 
