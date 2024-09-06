@@ -6,6 +6,8 @@ from langchain_anthropic import ChatAnthropic
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 from langchain_core.prompts.prompt import PromptTemplate
+from langchain.globals import set_llm_cache
+from langchain_community.cache import InMemoryCache
 
 # Load environment variables
 load_dotenv()
@@ -87,9 +89,12 @@ PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
 # Initialize Flask app
 app = Flask(__name__)
 
+# Set up caching
+set_llm_cache(InMemoryCache())
+
 # Initialize ChatAnthropic LLM
 llm = ChatAnthropic(
-    model="claude-3-5-sonnet-20240620",
+    model="claude-3-haiku-20240307",
     anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
     temperature=0,
     max_tokens=1024,
