@@ -8,6 +8,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain.globals import set_llm_cache
 from langchain_community.cache import InMemoryCache
+import markdown
 
 # Load environment variables
 load_dotenv()
@@ -24,9 +25,8 @@ You are a concise and helpful data science chatbot. Your role is to provide brie
 
 ## Response Guidelines:
 
-1. Start with a short, direct answer to the query.
-2. Provide most relevant resources.
-3. End with a single follow-up question to engage the user.
+1. Provide resources, which are given in Resource Information: , never add any more resource strictly follow resources only
+2. Format your responses using Markdown syntax for better readability.
 
 ## Resource Information:
 1. Free Course on AI Engineering <https://www.youtube.com/playlist?list=PLSdiMs6f-QAc8Iq1kKJMP8kSYAEUONLgE>
@@ -76,6 +76,16 @@ You are a concise and helpful data science chatbot. Your role is to provide brie
 
 16. RAG Explained <https://www.youtube.com/watch?v=NcCL1gJYyzw&t=11s>
     *(Retrival Augmented Generation)*
+
+17. Industry ready Data Science Project | AI Project(RAG Chatbot playlist)<https://www.youtube.com/playlist?list=PLSdiMs6f-QAcGVpnZ1ougPScXkAuvqIU6>
+    *(Create a RAG based Chatbot following Industry Ready Project)
+
+18. What is AGI?<https://www.youtube.com/watch?v=2yAf_Ne6Br0&list=PLSdiMs6f-QAc4iqzR16jwELlKtrbySzEA&index=3&t=524s>
+    *(What is AGI?)
+
+19. End to End PowerBI Project<https://www.youtube.com/watch?v=IcU7qYBLu88&list=PLSdiMs6f-QAeOKeTIyMYKdUkFa_E4sIzx&index=3&t=2159s>
+    *(End to end power bi chatbot) 
+
 If no relevant resources are available, say: "We'll add more resources soon. For urgent needs, please use this form: <https://forms.gle/DFCfRZroJvcmZQWRA>"
 
 Current conversation:
@@ -123,7 +133,10 @@ def chat():
     # Get response from LangChain conversation
     response = conversation.predict(input=user_message)
     
-    return jsonify({'response': response})
+    # Convert markdown to HTML
+    html_response = markdown.markdown(response)
+    
+    return jsonify({'response': html_response})
 
 # Run the Flask app
 if __name__ == '__main__':
